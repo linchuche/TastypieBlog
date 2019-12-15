@@ -1,13 +1,12 @@
 package com.comslin.rootcomment.http
 
-import com.comslin.rootcomment.bean.BaseBean
-import io.reactivex.Observable
-import retrofit2.Call
+import com.comslin.rootcomment.bean.BasePageBean
+import com.comslin.rootcomment.bean.NodeBean
+import com.comslin.rootcomment.bean.RootResponse
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
-import retrofit2.http.Query
 
 /**
  * Created by linchao on 2019/12/10.
@@ -28,7 +27,7 @@ interface NodeService {
     }
 
     @GET("node")
-    suspend fun nodeGet(): BaseBean
+    suspend fun nodeGet(): RootResponse<BasePageBean>
 
     @GET("node")
     suspend fun nodePost()
