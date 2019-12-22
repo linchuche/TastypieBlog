@@ -22,8 +22,6 @@ class NodeListFragment : Fragment() {
         val binding = FragmentNodeListBinding.inflate(inflater, container, false);
         context ?: return binding.root
 
-        val adapter = NodeAdapter()
-        binding.rvNode.adapter = adapter
 
 
         return binding.root

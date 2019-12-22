@@ -15,27 +15,24 @@
 
     </data>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:padding="12dp">
 
         <TextView
             android:id="@+id/tv_node_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@{node.title_text}"
-            app:layout_constraintBottom_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            android:textAppearance="@style/TextAppearance.AppCompat.Headline" />
 
         <TextView
             android:id="@+id/tv_node_detail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@{node.detail_text}"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_node_title" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            android:layout_below="@id/tv_node_title"
+            android:text="@{node.detail_text}" />
+
+    </RelativeLayout>
 </layout>

@@ -5,9 +5,9 @@ import java.util.List;
 /**
  * Created by linchao on 2019/12/10.
  */
-public class BasePageBean {
+public class BasePageBean<T> {
     private MetaBean meta;
-    private List<NodeBean> objects;
+    private List<T> objects;
 
     public MetaBean getMeta() {
         return meta;
@@ -17,11 +17,11 @@ public class BasePageBean {
         this.meta = meta;
     }
 
-    public List<NodeBean> getObjects() {
+    public List<T> getObjects() {
         return objects;
     }
 
-    public void setObjects(List<NodeBean> objects) {
+    public void setObjects(List<T> objects) {
         this.objects = objects;
     }
 
