@@ -1,7 +1,9 @@
 package com.comslin.rootcomment.viewmodels
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagedList
 import com.comslin.rootcomment.bean.BasePageBean
 import com.comslin.rootcomment.bean.NodeBean
 import com.comslin.rootcomment.http.NodeService
@@ -18,7 +20,7 @@ class NodeListViewModel internal constructor() : BaseViewModel() {
     //    private val
     public val nodesLiveData = MutableLiveData<BasePageBean<NodeBean>>()
     public val networkState = MutableLiveData<NetworkState>()
-
+//    val nodePageList: LiveData<PagedList<NodeBean>> =
 //    val networkState: LiveData<NetworkState>
     // represents the refresh status to show to the user. Separate from networkState, this
     // value is importantly only when refresh is requested.

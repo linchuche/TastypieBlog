@@ -3,6 +3,7 @@ package com.comslin.rootcomment.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -15,7 +16,7 @@ import com.comslin.rootcomment.repository.NetworkState
  * Created by linchao on 2019/12/14.
  */
 class NodeAdapter(val retryCallback: () -> Unit) :
-    ListAdapter<NodeBean, RecyclerView.ViewHolder>(NodeDiffCallback()) {
+    PagedListAdapter<NodeBean, RecyclerView.ViewHolder>(POST_COMPARATOR) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
@@ -32,13 +33,11 @@ class NodeAdapter(val retryCallback: () -> Unit) :
     }
 
     private var networkState: NetworkState? = null
-    override fun getItem(position: Int): NodeBean {
-        return super.getItem(position)
-    }
+
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (getItemViewType(position)) {
-            R.layout.list_item_node -> (holder as NodeViewHolder).bind(getItem(position))
+            R.layout.list_item_node -> (holder as NodeViewHolder).bind(getItem(position)!!)
             R.layout.item_network_state -> (holder as NetworkStateItemViewHolder).bindTo(
                 networkState
             )
@@ -119,6 +118,7 @@ class NodeAdapter(val retryCallback: () -> Unit) :
             return oldItem.copy(node_id = newItem.node_id) == newItem
         }
     }
+
 
 }
 
