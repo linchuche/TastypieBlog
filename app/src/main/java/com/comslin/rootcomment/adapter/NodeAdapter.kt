@@ -16,7 +16,7 @@ import com.comslin.rootcomment.repository.NetworkState
  * Created by linchao on 2019/12/14.
  */
 class NodeAdapter(val retryCallback: () -> Unit) :
-    PagedListAdapter<NodeBean, RecyclerView.ViewHolder>(POST_COMPARATOR) {
+    ListAdapter<NodeBean, RecyclerView.ViewHolder>(NODE_COMPARATOR) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
@@ -37,7 +37,7 @@ class NodeAdapter(val retryCallback: () -> Unit) :
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (getItemViewType(position)) {
-            R.layout.list_item_node -> (holder as NodeViewHolder).bind(getItem(position)!!)
+            R.layout.list_item_node -> (holder as NodeViewHolder).bind(getItem(position))
             R.layout.item_network_state -> (holder as NetworkStateItemViewHolder).bindTo(
                 networkState
             )
@@ -52,9 +52,11 @@ class NodeAdapter(val retryCallback: () -> Unit) :
             R.layout.list_item_node
         }
     }
+
     override fun getItemCount(): Int {
         return super.getItemCount() + if (hasExtraRow()) 1 else 0
     }
+
     fun setNetworkState(newNetworkState: NetworkState?) {
         val previousState = this.networkState
         val hadExtraRow = hasExtraRow()
@@ -88,35 +90,29 @@ class NodeAdapter(val retryCallback: () -> Unit) :
 
         }
 
-        fun bind(item: NodeBean) {
+        fun bind(item: NodeBean?) {
+
             binding.apply {
-                node = item
+                if (item == null) {
+                    node = NodeBean("?", "?", "-1")
+                } else {
+                    node = item
+                }
                 executePendingBindings()
             }
         }
     }
 
     companion object {
-        private val PAYLOAD_SCORE = Any()
-        val POST_COMPARATOR = object : DiffUtil.ItemCallback<NodeBean>() {
-            override fun areContentsTheSame(oldItem: NodeBean, newItem: NodeBean): Boolean =
-                oldItem == newItem
 
+        private val NODE_COMPARATOR = object : DiffUtil.ItemCallback<NodeBean>() {
             override fun areItemsTheSame(oldItem: NodeBean, newItem: NodeBean): Boolean =
                 oldItem.node_id == newItem.node_id
 
-            override fun getChangePayload(oldItem: NodeBean, newItem: NodeBean): Any? {
-                return if (sameExceptScore(oldItem, newItem)) {
-                    PAYLOAD_SCORE
-                } else {
-                    null
-                }
-            }
+            override fun areContentsTheSame(oldItem: NodeBean, newItem: NodeBean): Boolean =
+                oldItem == newItem
         }
 
-        private fun sameExceptScore(oldItem: NodeBean, newItem: NodeBean): Boolean {
-            return oldItem.copy(node_id = newItem.node_id) == newItem
-        }
     }
 
 

@@ -1,54 +1,74 @@
 package com.comslin.rootcomment
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import android.view.View
-import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.*
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.comslin.rootcomment.adapter.NodeAdapter
 import com.comslin.rootcomment.app.BaseVMActivity
-import com.comslin.rootcomment.bean.BasePageBean
-import com.comslin.rootcomment.databinding.ActivityMainBinding
-import com.comslin.rootcomment.http.NodeService
+import com.comslin.rootcomment.bean.NodeBean
 import com.comslin.rootcomment.viewmodels.NodeListViewModel
-import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : BaseVMActivity() {
 
-    private var nodeListViewModel: NodeListViewModel? = null
-
+    private lateinit var nodeListViewModel: NodeListViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val binding: ActivityMainBinding =
-            DataBindingUtil.setContentView(this, R.layout.activity_main)
+        setContentView(R.layout.activity_main)
+        nodeListViewModel = createViewModel<NodeListViewModel>()
+        setupScrollListener()
 
         val adapter = NodeAdapter() {
-            nodeListViewModel?.getNodeList()
+            //            nodeListViewModel.loadMoreNodeList()
         }
-        binding.setFltClickListener {
+        val decoration = DividerItemDecoration(this, DividerItemDecoration.VERTICAL)
+        rvNode.addItemDecoration(decoration)
+        rvNode.adapter = adapter
 
-        }
 
-
-        binding.rvNode.adapter = adapter
-        nodeListViewModel = createViewModel<NodeListViewModel>()
-        nodeListViewModel?.nodesLiveData?.observe(this, Observer {
-            adapter.submitList(it?.objects)
+        nodeListViewModel.nodeListResult.observe(this, Observer {
+            adapter.submitList(it.objects) {
+                // Workaround for an issue where RecyclerView incorrectly uses the loading / spinner
+                // item added to the end of the list as an anchor during initial load.
+                val layoutManager = (rvNode.layoutManager as LinearLayoutManager)
+                val position = layoutManager.findFirstCompletelyVisibleItemPosition()
+                if (position != RecyclerView.NO_POSITION) {
+                    rvNode.scrollToPosition(position)
+                }
+            }
+            val myList: ArrayList<NodeBean> = ArrayList()
+            myList.add(NodeBean("xx", "xx", "xxx"))
+            adapter.submitList(myList)
         })
-        nodeListViewModel?.networkState?.observe(this, Observer {
+        nodeListViewModel.networkState.observe(this, Observer {
             adapter.setNetworkState(it)
         })
-        nodeListViewModel?.getNodeList()
+//        nodeListViewModel.loadMoreNodeList()
+
 
     }
 
+    private fun setupScrollListener() {
+        val layoutManager =
+            rvNode.layoutManager as androidx.recyclerview.widget.LinearLayoutManager
+        rvNode.addOnScrollListener(object :
+            androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
+            override fun onScrolled(
+                recyclerView: androidx.recyclerview.widget.RecyclerView,
+                dx: Int,
+                dy: Int
+            ) {
+                super.onScrolled(recyclerView, dx, dy)
+                val totalItemCount = layoutManager.itemCount
+                val visibleItemCount = layoutManager.childCount
+                val lastVisibleItem = layoutManager.findLastVisibleItemPosition()
+                nodeListViewModel.listScrolled(visibleItemCount, lastVisibleItem, totalItemCount)
+            }
+        })
+    }
 
-//    fun <T> request(
-//        request: suspend CoroutineScope.() -> BasePageBean,
-//        success: ((info: BasePageBean.MetaBean) -> Unit)
-//    ) {
-//        runOnIo(request, success, {})
-//    }
+
 }

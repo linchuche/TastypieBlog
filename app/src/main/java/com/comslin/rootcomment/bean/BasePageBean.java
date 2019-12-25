@@ -1,5 +1,7 @@
 package com.comslin.rootcomment.bean;
 
+import androidx.paging.PagedList;
+
 import java.util.List;
 
 /**
