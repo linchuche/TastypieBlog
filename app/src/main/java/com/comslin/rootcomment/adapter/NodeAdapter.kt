@@ -16,7 +16,7 @@ import com.comslin.rootcomment.repository.NetworkState
  * Created by linchao on 2019/12/14.
  */
 class NodeAdapter(val retryCallback: () -> Unit) :
-    ListAdapter<NodeBean, RecyclerView.ViewHolder>(NODE_COMPARATOR) {
+    PagedListAdapter<NodeBean, RecyclerView.ViewHolder>(NODE_COMPARATOR) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
@@ -91,7 +91,6 @@ class NodeAdapter(val retryCallback: () -> Unit) :
         }
 
         fun bind(item: NodeBean?) {
-
             binding.apply {
                 if (item == null) {
                     node = NodeBean("?", "?", "-1")

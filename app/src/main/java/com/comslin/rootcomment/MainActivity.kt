@@ -1,6 +1,7 @@
 package com.comslin.rootcomment
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.lifecycle.*
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -19,56 +20,22 @@ class MainActivity : BaseVMActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         nodeListViewModel = createViewModel<NodeListViewModel>()
-        setupScrollListener()
-
         val adapter = NodeAdapter() {
-            //            nodeListViewModel.loadMoreNodeList()
         }
         val decoration = DividerItemDecoration(this, DividerItemDecoration.VERTICAL)
         rvNode.addItemDecoration(decoration)
         rvNode.adapter = adapter
+        flt.setOnClickListener({
+            Toast.makeText(this, "xxx", Toast.LENGTH_LONG).show()
+        })
 
-
-        nodeListViewModel.nodeListResult.observe(this, Observer {
-            adapter.submitList(it.objects) {
-                // Workaround for an issue where RecyclerView incorrectly uses the loading / spinner
-                // item added to the end of the list as an anchor during initial load.
-                val layoutManager = (rvNode.layoutManager as LinearLayoutManager)
-                val position = layoutManager.findFirstCompletelyVisibleItemPosition()
-                if (position != RecyclerView.NO_POSITION) {
-                    rvNode.scrollToPosition(position)
-                }
-            }
-            val myList: ArrayList<NodeBean> = ArrayList()
-            myList.add(NodeBean("xx", "xx", "xxx"))
-            adapter.submitList(myList)
+        nodeListViewModel.nodes.observe(this, Observer {
+            adapter.submitList(it)
         })
         nodeListViewModel.networkState.observe(this, Observer {
             adapter.setNetworkState(it)
         })
-//        nodeListViewModel.loadMoreNodeList()
 
 
     }
-
-    private fun setupScrollListener() {
-        val layoutManager =
-            rvNode.layoutManager as androidx.recyclerview.widget.LinearLayoutManager
-        rvNode.addOnScrollListener(object :
-            androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
-            override fun onScrolled(
-                recyclerView: androidx.recyclerview.widget.RecyclerView,
-                dx: Int,
-                dy: Int
-            ) {
-                super.onScrolled(recyclerView, dx, dy)
-                val totalItemCount = layoutManager.itemCount
-                val visibleItemCount = layoutManager.childCount
-                val lastVisibleItem = layoutManager.findLastVisibleItemPosition()
-                nodeListViewModel.listScrolled(visibleItemCount, lastVisibleItem, totalItemCount)
-            }
-        })
-    }
-
-
 }

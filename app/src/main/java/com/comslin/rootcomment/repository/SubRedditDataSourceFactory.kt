@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.example.paging.pagingwithnetwork.reddit.repository.inMemory.byItem
+package com.android.example.paging.pagingwithnetwork.reddit.repository.inMemory.byPage
 
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.DataSource
@@ -27,13 +27,13 @@ import java.util.concurrent.Executor
  * This allows us to channel its network request status etc back to the UI. See the Listing creation
  * in the Repository class.
  */
-class NodeDataSourceFactory(
-    private val nodeApi: NodeApi,
-    private val subredditName: String,
-    private val retryExecutor: Executor) : DataSource.Factory<String, NodeBean>() {
-    val sourceLiveData = MutableLiveData<ItemKeyedSubredditDataSource>()
-    override fun create(): DataSource<String, NodeBean> {
-        val source = ItemKeyedSubredditDataSource(nodeApi, subredditName, retryExecutor)
+class SubRedditDataSourceFactory(
+        private val redditApi: NodeApi,
+        private val subredditName: String,
+        private val retryExecutor: Executor) : DataSource.Factory<Int, NodeBean>() {
+    val sourceLiveData = MutableLiveData<PageKeyedSubredditDataSource>()
+    override fun create(): DataSource<Int, NodeBean> {
+        val source = PageKeyedSubredditDataSource(redditApi, subredditName, retryExecutor)
         sourceLiveData.postValue(source)
         return source
     }

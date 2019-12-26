@@ -18,7 +18,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="12dp">
+        android:padding="4dp">
 
         <TextView
             android:id="@+id/tv_node_title"
@@ -34,5 +34,12 @@
             android:layout_below="@id/tv_node_title"
             android:text="@{node.detail_text}" />
 
+        <TextView
+            android:id="@+id/tv_node_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:text="@{node.pub_date}" />
     </RelativeLayout>
 </layout>

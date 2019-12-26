@@ -39,7 +39,7 @@ public class BasePageBean<T> {
         private int limit;
         private String next;
         private int offset;
-        private Object previous;
+        private String previous;
         private int total_count;
 
         public int getLimit() {
@@ -66,11 +66,11 @@ public class BasePageBean<T> {
             this.offset = offset;
         }
 
-        public Object getPrevious() {
+        public String getPrevious() {
             return previous;
         }
 
-        public void setPrevious(Object previous) {
+        public void setPrevious(String previous) {
             this.previous = previous;
         }
 

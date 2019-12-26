@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package com.android.example.paging.pagingwithnetwork.reddit.repository.inMemory.byItem
+package com.android.example.paging.pagingwithnetwork.reddit.repository.inMemory.byPage
 
 import androidx.lifecycle.MutableLiveData
-import androidx.paging.ItemKeyedDataSource
+import androidx.paging.PageKeyedDataSource
+import com.comslin.rootcomment.bean.BasePageBean
 import com.comslin.rootcomment.bean.NodeBean
 import com.comslin.rootcomment.http.NodeApi
 import com.comslin.rootcomment.repository.NetworkState
@@ -27,30 +28,27 @@ import java.io.IOException
 import java.util.concurrent.Executor
 
 /**
- * A data source that uses the "name" field of posts as the key for next/prev pages.
+ * A data source that uses the before/after keys returned in page requests.
  * <p>
- * Note that this is not the correct consumption of the Reddit API but rather shown here as an
- * alternative implementation which might be more suitable for your backend.
- * see PageKeyedSubredditDataSource for the other sample.
+ * See ItemKeyedSubredditDataSource
  */
-class ItemKeyedSubredditDataSource(
+class PageKeyedSubredditDataSource(
     private val redditApi: NodeApi,
     private val subredditName: String,
     private val retryExecutor: Executor
-) : ItemKeyedDataSource<Int, NodeBean>() {
+) : PageKeyedDataSource<Int, NodeBean>() {
+
     // keep a function reference for the retry event
     private var retry: (() -> Any)? = null
 
     /**
      * There is no sync on the state because paging will always call loadInitial first then wait
-     * for it to return some success value before calling loadAfter and we don't support loadBefore
-     * in this example.
-     * <p>
-     * See BoundaryCallback example for a more complete example on syncing multiple network states.
+     * for it to return some success value before calling loadAfter.
      */
     val networkState = MutableLiveData<NetworkState>()
 
     val initialLoad = MutableLiveData<NetworkState>()
+
     fun retryAllFailed() {
         val prevRetry = retry
         retry = null
@@ -61,37 +59,35 @@ class ItemKeyedSubredditDataSource(
         }
     }
 
-    override fun loadBefore(params: LoadParams<Int>, callback: LoadCallback<NodeBean>) {
+    override fun loadBefore(
+        params: LoadParams<Int>,
+        callback: LoadCallback<Int, NodeBean>
+    ) {
         // ignored, since we only ever append to our initial load
     }
 
-    override fun loadAfter(params: LoadParams<Int>, callback: LoadCallback<NodeBean>) {
-        // set network value to loading.
+    override fun loadAfter(params: LoadParams<Int>, callback: LoadCallback<Int, NodeBean>) {
         networkState.postValue(NetworkState.LOADING)
-        // even though we are using async retrofit API here, we could also use sync
-        // it is just different to show that the callback can be called async.
         redditApi.nodeGet(
-            offset = params.key
+            params.key
         ).enqueue(
-            object : retrofit2.Callback<RedditApi.ListingResponse> {
-                override fun onFailure(call: Call<RedditApi.ListingResponse>, t: Throwable) {
-                    // keep a lambda for future retry
+            object : retrofit2.Callback<BasePageBean<NodeBean>> {
+                override fun onFailure(call: Call<BasePageBean<NodeBean>>, t: Throwable) {
                     retry = {
                         loadAfter(params, callback)
                     }
-                    // publish the error
                     networkState.postValue(NetworkState.error(t.message ?: "unknown err"))
                 }
 
                 override fun onResponse(
-                    call: Call<RedditApi.ListingResponse>,
-                    response: Response<RedditApi.ListingResponse>
+                    call: Call<BasePageBean<NodeBean>>,
+                    response: Response<BasePageBean<NodeBean>>
                 ) {
                     if (response.isSuccessful) {
-                        val items = response.body()?.data?.children?.map { it.data } ?: emptyList()
-                        // clear retry since last request succeeded
+                        val data = response.body()
+                        val items = data?.objects ?: emptyList()
                         retry = null
-                        callback.onResult(items)
+                        callback.onResult(items, data?.meta?.offset?.plus(20))
                         networkState.postValue(NetworkState.LOADED)
                     } else {
                         retry = {
@@ -106,35 +102,28 @@ class ItemKeyedSubredditDataSource(
         )
     }
 
-    /**
-     * The name field is a unique identifier for post items.
-     * (no it is not the title of the post :) )
-     * https://www.reddit.com/dev/api
-     */
-    override fun getKey(item: NodeBean): String = item.node_id
 
     override fun loadInitial(
         params: LoadInitialParams<Int>,
-        callback: LoadInitialCallback<NodeBean>
+        callback: LoadInitialCallback<Int, NodeBean>
     ) {
-        val request = redditApi.getTop(
-            subreddit = subredditName,
-            limit = params.requestedLoadSize
+        val request = redditApi.nodeGet(
+            0
         )
-        // update network states.
-        // we also provide an initial load state to the listeners so that the UI can know when the
-        // very first list is loaded.
         networkState.postValue(NetworkState.LOADING)
         initialLoad.postValue(NetworkState.LOADING)
 
         // triggered by a refresh, we better execute sync
         try {
             val response = request.execute()
-            val items = response.body()?.data?.children?.map { it.data } ?: emptyList()
+            val data = response.body()
+            val items = data?.objects ?: emptyList()
+            var meta = data?.meta
+
             retry = null
             networkState.postValue(NetworkState.LOADED)
             initialLoad.postValue(NetworkState.LOADED)
-            callback.onResult(items)
+            callback.onResult(items, 0, meta?.offset?.plus(20))
         } catch (ioException: IOException) {
             retry = {
                 loadInitial(params, callback)
