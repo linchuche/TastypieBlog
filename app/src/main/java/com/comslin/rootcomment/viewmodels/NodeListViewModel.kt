@@ -25,7 +25,7 @@ class NodeListViewModel internal constructor() : BaseViewModel() {
         networkExecutor = Executors.newFixedThreadPool(5)
     )
     //    private val
-    public val nodeListResult = (rep.postsOfSubreddit("", 20))
+    public val nodeListResult = (rep.postsOfSubreddit())
 
     public var nodes =
         Transformations.distinctUntilChanged(nodeListResult.pagedList)

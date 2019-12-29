@@ -21,6 +21,7 @@ class MainActivity : BaseVMActivity() {
         setContentView(R.layout.activity_main)
         nodeListViewModel = createViewModel<NodeListViewModel>()
         val adapter = NodeAdapter() {
+            nodeListViewModel.rep.postsOfSubreddit()
         }
         val decoration = DividerItemDecoration(this, DividerItemDecoration.VERTICAL)
         rvNode.addItemDecoration(decoration)
@@ -28,7 +29,6 @@ class MainActivity : BaseVMActivity() {
         flt.setOnClickListener({
             Toast.makeText(this, "xxx", Toast.LENGTH_LONG).show()
         })
-
         nodeListViewModel.nodes.observe(this, Observer {
             adapter.submitList(it)
         })

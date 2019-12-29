@@ -34,12 +34,12 @@ class InMemoryByPageKeyRepository(
     private val networkExecutor: Executor
 ) : RedditPostRepository {
     @MainThread
-    override fun postsOfSubreddit(subReddit: String, pageSize: Int): Listing<NodeBean> {
-        val sourceFactory = SubRedditDataSourceFactory(redditApi, subReddit, networkExecutor)
+    override fun postsOfSubreddit(): Listing<NodeBean> {
+        val sourceFactory = SubRedditDataSourceFactory(redditApi, "", networkExecutor)
 
         // We use toLiveData Kotlin extension function here, you could also use LivePagedListBuilder
         val livePagedList =
-            LivePagedListBuilder(sourceFactory, pageSize).setFetchExecutor(networkExecutor).build()
+            LivePagedListBuilder(sourceFactory, 20).setFetchExecutor(networkExecutor).build()
         val refreshState = Transformations.switchMap(sourceFactory.sourceLiveData) {
             it.initialLoad
         }

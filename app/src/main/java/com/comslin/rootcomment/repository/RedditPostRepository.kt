@@ -24,7 +24,7 @@ import com.comslin.rootcomment.bean.NodeBean
  * network+db, or network-only
  */
 interface RedditPostRepository {
-    fun postsOfSubreddit(subReddit: String, pageSize: Int): Listing<NodeBean>
+    fun postsOfSubreddit(): Listing<NodeBean>
 
     enum class Type {
         IN_MEMORY_BY_ITEM,
